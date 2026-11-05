@@ -14,10 +14,16 @@ class TipoSolicitud(StrEnum):
     CERTIFICADO = "CERT"
     EXCEPCION_CORRELATIVIDAD = "EXCEP"
     BAJA = "BAJA"
+    
 class Prioridad(StrEnum):
     ALTA = "ALTA"
     MEDIA = "MEDIA"
     BAJA = "BAJA"
+    
+class CondicionEstudiante(StrEnum):
+    REGULAR = "REG"
+    LIBRE = "LIBRE"
+    EGRESADO = "EGR"
     
 class Estado:
     """Representa el estado actual de una solicitud académica."""
@@ -82,7 +88,7 @@ class Solicitud:
         if "@" not in self.estudiante.email or "." not in self.estudiante.email:
             return False, "El email del estudiante no tiene un formato válido."
         if (
-            self.estudiante.condicion == "LIBRE"
+            self.estudiante.condicion == CondicionEstudiante.LIBRE
             and self.estudiante.materias_aprobadas < 2
         ):
             return (
@@ -160,7 +166,7 @@ class GestorSolicitudesAcademicas:
 
         # Asignación de área responsable y cálculo de días de gestión según trámite
         if tipo_solicitud == TipoSolicitud.EQUIVALENCIA:
-            if est.condicion != "REG":
+            if est.condicion != CondicionEstudiante.REGULAR:
                 print(
                     "[ERROR] Las equivalencias solo pueden ser solicitadas por alumnos REGULARES."
                 )
