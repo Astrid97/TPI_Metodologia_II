@@ -1,0 +1,86 @@
+[
+    {
+        "id_solicitud": 101,
+        "estudiante": {
+            "nombre": "Juan",
+            "apellido": "Pérez",
+            "legajo": 114520,
+            "dni": "42111222",
+            "email": "juan.perez@tupad.utn.edu.ar",
+            "condicion": "REG",
+            "materias_aprobadas": 12
+        },
+        "tipo": "EQUIV",
+        "prioridad": "ALTA",
+        "descripcion": "Solicitud de equivalencia de Análisis Matemático I",
+        "fecha_creacion": "2026-04-10",
+        "fecha_vencimiento": "2026-04-17",
+        "dias_vencimiento": 7,
+        "estado": {
+            "codigo": "REV",
+            "descripcion": "Documentación recibida en Secretaría Académica",
+            "fecha_actualizacion": "2026-04-12"
+        },
+        "area_responsable": {
+            "nombre_area": "Secretaría Académica",
+            "responsable_cargo": "Dra. Laura Fernandez",
+            "email_contacto": "academica@utn.edu.ar"
+        }
+    },
+    {
+        "id_solicitud": 102,
+        "estudiante": {
+            "nombre": "María",
+            "apellido": "López",
+            "legajo": 118930,
+            "dni": "43555666",
+            "email": "maria.lopez@tupad.utn.edu.ar",
+            "condicion": "REG",
+            "materias_aprobadas": 8
+        },
+        "tipo": "CERT",
+        "prioridad": "MEDIA",
+        "descripcion": "Certificado de alumno regular para presentar en el trabajo",
+        "fecha_creacion": "2026-04-10",
+        "fecha_vencimiento": "2026-04-15",
+        "dias_vencimiento": 5,
+        "estado": {
+            "codigo": "APR",
+            "descripcion": "Certificado emitido y enviado por correo",
+            "fecha_actualizacion": "2026-04-12"
+        },
+        "area_responsable": {
+            "nombre_area": "Departamento de Alumnado",
+            "responsable_cargo": "Lic. Fernando Ruiz",
+            "email_contacto": "alumnado@utn.edu.ar"
+        }
+    },
+    {
+        "id_solicitud": 103,
+        "estudiante": {
+            "nombre": "Lucas",
+            "apellido": "Martínez",
+            "legajo": 120045,
+            "dni": "44888999",
+            "email": "lucas.martinez@tupad.utn.edu.ar",
+            "condicion": "LIBRE",
+            "materias_aprobadas": 4
+        },
+        "tipo": "EXCEP",
+        "prioridad": "ALTA",
+        "descripcion": "Excepción de correlatividad para cursar Metodología II",
+        "fecha_creacion": "2026-04-11",
+        "fecha_vencimiento": "2026-04-16",
+        "dias_vencimiento": 5,
+        "estado": {
+            "codigo": "PEND",
+            "descripcion": "Pendiente de revisión inicial",
+            "fecha_actualizacion": "2026-04-11"
+        },
+        "area_responsable": {
+            "nombre_area": "Dirección de Carrera TUP",
+            "responsable_cargo": "Mg. Sofía Peralta",
+            "email_contacto": "tup@utn.edu.ar"
+        }
+    }
+]
