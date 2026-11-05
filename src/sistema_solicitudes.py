@@ -3,11 +3,6 @@ import os
 from datetime import datetime, timedelta
 from enum import StrEnum        
 
-#---- Constantes
-LEGAJO_MINIMO = 10000
-LEGAJO_MAXIMO = 999999
-MATERIAS_MINIMAS_LIBRE = 2
-
 class CodigoEstado(StrEnum):
     PENDIENTE = "PEND"
     EN_REVISION = "REV"
@@ -40,6 +35,11 @@ class Estado:
         
 class Estudiante:
     """Representa al estudiante que realiza la solicitud."""
+    
+    #---- Constantes
+    LEGAJO_MINIMO = 10000
+    LEGAJO_MAXIMO = 999999
+    MATERIAS_MINIMAS_LIBRE = 2
 
     def __init__(
         self, nombre, apellido, legajo, dni, email, condicion, materias_aprobadas
@@ -51,7 +51,21 @@ class Estudiante:
         self.email = email
         self.condicion = condicion
         self.materias_aprobadas = materias_aprobadas
-
+        
+    def validar_legajo_y_regularidad_estudiante(self):
+        if self.legajo < self.LEGAJO_MINIMO or self.legajo > self.LEGAJO_MAXIMO:
+            return False, f"El legajo debe tener entre 5 y 6 dígitos ({self.LEGAJO_MINIMO} - {self.LEGAJO_MAXIMO})."
+        if "@" not in self.email or "." not in self.email:
+            return False, "El email del estudiante no tiene un formato válido."
+        if (
+            self.condicion == CondicionEstudiante.LIBRE
+            and self.materias_aprobadas < self.MATERIAS_MINIMAS_LIBRE
+        ):
+            return (
+                False,
+                f"Estudiante libre con menos de {self.MATERIAS_MINIMAS_LIBRE} materias aprobadas no puede iniciar trámites.",
+            )
+        return True, "Estudiante válido."
 
 class ResponsableArea:
     """Representa el área administrativa o académica asignada."""
@@ -86,21 +100,6 @@ class Solicitud:
         self.estado = estado
         self.area_responsable = area_responsable
         self.dias_vencimiento = dias_vencimiento
-
-    def validar_legajo_y_regularidad_estudiante(self):
-        if self.estudiante.legajo < LEGAJO_MINIMO or self.estudiante.legajo > LEGAJO_MAXIMO:
-            return False, f"El legajo debe tener entre 5 y 6 dígitos ({LEGAJO_MINIMO} - {LEGAJO_MAXIMO})."
-        if "@" not in self.estudiante.email or "." not in self.estudiante.email:
-            return False, "El email del estudiante no tiene un formato válido."
-        if (
-            self.estudiante.condicion == CondicionEstudiante.LIBRE
-            and self.estudiante.materias_aprobadas < MATERIAS_MINIMAS_LIBRE
-        ):
-            return (
-                False,
-                f"Estudiante libre con menos de {MATERIAS_MINIMAS_LIBRE} materias aprobadas no puede iniciar trámites.",
-            )
-        return True, "Estudiante válido."
 
 
 class GestorSolicitudesAcademicas:
@@ -164,7 +163,7 @@ class GestorSolicitudesAcademicas:
         )
 
         # Verificación de condiciones académicas del estudiante
-        es_valido, mensaje_val = sol.validar_legajo_y_regularidad_estudiante()
+        es_valido, mensaje_val = est.validar_legajo_y_regularidad_estudiante()
         if not es_valido:
             print(f"[RECHAZADA EN VALIDACIÓN] {mensaje_val}")
             return False
