@@ -107,6 +107,14 @@ class GestorSolicitudesAcademicas:
 
     def __init__(self, archivo_db="solicitudes_db.json"):
         self.archivo_db = archivo_db
+        
+    def _leer_datos(self):
+        with open(self.archivo_db, "r", encoding="utf-8") as archivo:
+            return json.load(archivo)
+
+    def _guardar_datos(self, datos):
+        with open(self.archivo_db, "w", encoding="utf-8") as archivo:
+            json.dump(datos, archivo, indent=4, ensure_ascii=False)
 
     def procesar_solicitud(
         self,
@@ -218,11 +226,10 @@ class GestorSolicitudesAcademicas:
         # Lectura y guardado en archivo JSON
         datos = []
         if os.path.exists(self.archivo_db):
-            with open(self.archivo_db, "r", encoding="utf-8") as f:
-                try:
-                    datos = json.load(f)
-                except Exception:
-                    datos = []
+            try:
+                datos = self._leer_datos()
+            except Exception:
+                datos = []
 
         for item in datos:
             if item["id_solicitud"] == id_solicitud:
@@ -259,8 +266,7 @@ class GestorSolicitudesAcademicas:
         }
 
         datos.append(nuevo_registro)
-        with open(self.archivo_db, "w", encoding="utf-8") as f:
-            json.dump(datos, f, indent=4, ensure_ascii=False)
+        self._guardar_datos(datos)
 
         print(
             f"[OK] Solicitud #{id_solicitud} registrada con éxito. Área: {area.nombre_area} (Plazo: {dias} días, vence: {fecha_venc})."
@@ -274,8 +280,7 @@ class GestorSolicitudesAcademicas:
             print("[ERROR] No hay solicitudes registradas.")
             return False
 
-        with open(self.archivo_db, "r", encoding="utf-8") as f:
-            datos = json.load(f)
+        datos = self._leer_datos()
 
         if nuevo_codigo_estado not in list(CodigoEstado):
             print(f"[ERROR] Código de estado '{nuevo_codigo_estado}' inválido.")
@@ -303,9 +308,8 @@ class GestorSolicitudesAcademicas:
             print(f"[ERROR] No se encontró la solicitud #{id_solicitud}.")
             return False
 
-        with open(self.archivo_db, "w", encoding="utf-8") as f:
-            json.dump(datos, f, indent=4, ensure_ascii=False)
-
+        self._guardar_datos(datos)
+        
         print(
             f"[OK] Estado de solicitud #{id_solicitud} actualizado a '{nuevo_codigo_estado}' ({observacion})."
         )
@@ -318,8 +322,7 @@ class GestorSolicitudesAcademicas:
             print("[ERROR] No hay solicitudes registradas.")
             return False
 
-        with open(self.archivo_db, "r", encoding="utf-8") as f:
-            datos = json.load(f)
+        datos = self._leer_datos()
 
         encontrado = False
         for item in datos:
@@ -334,8 +337,7 @@ class GestorSolicitudesAcademicas:
             print(f"[ERROR] No se encontró la solicitud #{id_solicitud}.")
             return False
 
-        with open(self.archivo_db, "w", encoding="utf-8") as f:
-            json.dump(datos, f, indent=4, ensure_ascii=False)
+        self._guardar_datos(datos)
 
         print(
             f"[OK] Solicitud #{id_solicitud} reasignada a {nueva_area} ({nuevo_responsable})."
@@ -347,8 +349,7 @@ class GestorSolicitudesAcademicas:
             print("[INFO] Base de datos vacía.")
             return []
 
-        with open(self.archivo_db, "r", encoding="utf-8") as f:
-            datos = json.load(f)
+        datos = self._leer_datos()
 
         resultado = []
         for s in datos:
@@ -373,13 +374,12 @@ class GestorSolicitudesAcademicas:
             print("[INFO] No hay datos para generar el reporte.")
             return
 
-        with open(self.archivo_db, "r", encoding="utf-8") as f:
-            solicitudes = json.load(f)
+        solicitudes = self._leer_datos()
 
         pendiente = 0
         en_revision = 0
-        aprobadas = 0
-        rechazadas = 0
+        aprobada = 0
+        rechazada = 0
         prioridad_alta = 0
 
         for solicitud in solicitudes:
@@ -388,9 +388,9 @@ class GestorSolicitudesAcademicas:
             elif solicitud["estado"]["codigo"] == CodigoEstado.EN_REVISION:
                 en_revision += 1
             elif solicitud["estado"]["codigo"] == CodigoEstado.APROBADA:
-                aprobadas += 1
+                aprobada += 1
             elif solicitud["estado"]["codigo"] == CodigoEstado.RECHAZADA:
-                rechazadas += 1
+                rechazada += 1
 
             if solicitud["prioridad"] == Prioridad.ALTA:
                 prioridad_alta += 1
@@ -401,8 +401,8 @@ class GestorSolicitudesAcademicas:
         print(f"Total de solicitudes registradas : {len(solicitudes)}")
         print(f"  - Pendientes (PEND)            : {pendiente}")
         print(f"  - En Revisión (REV)            : {en_revision}")
-        print(f"  - Aprobadas (APR)              : {aprobadas}")
-        print(f"  - Rechazadas (RECH)            : {rechazadas}")
+        print(f"  - Aprobadas (APR)              : {aprobada}")
+        print(f"  - Rechazadas (RECH)            : {rechazada}")
         print(f"Solicitudes de prioridad ALTA    : {prioridad_alta}")
         print("-------------------------------------------------------")
         print("Detalle de solicitudes:")
