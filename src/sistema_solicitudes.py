@@ -374,42 +374,42 @@ class GestorSolicitudesAcademicas:
             return
 
         with open(self.archivo_db, "r", encoding="utf-8") as f:
-            d = json.load(f)
+            solicitudes = json.load(f)
 
-        c1 = 0
-        c2 = 0
-        c3 = 0
-        c4 = 0
-        pa = 0
+        pendiente = 0
+        en_revision = 0
+        aprobadas = 0
+        rechazadas = 0
+        prioridad_alta = 0
 
-        for x in d:
-            if x["estado"]["codigo"] == CodigoEstado.PENDIENTE:
-                c1 += 1
-            elif x["estado"]["codigo"] == CodigoEstado.EN_REVISION:
-                c2 += 1
-            elif x["estado"]["codigo"] == CodigoEstado.APROBADA:
-                c3 += 1
-            elif x["estado"]["codigo"] == CodigoEstado.RECHAZADA:
-                c4 += 1
+        for solicitud in solicitudes:
+            if solicitud["estado"]["codigo"] == CodigoEstado.PENDIENTE:
+                pendiente += 1
+            elif solicitud["estado"]["codigo"] == CodigoEstado.EN_REVISION:
+                en_revision += 1
+            elif solicitud["estado"]["codigo"] == CodigoEstado.APROBADA:
+                aprobadas += 1
+            elif solicitud["estado"]["codigo"] == CodigoEstado.RECHAZADA:
+                rechazadas += 1
 
-            if x["prioridad"] == Prioridad.ALTA:
-                pa += 1
+            if solicitud["prioridad"] == Prioridad.ALTA:
+                prioridad_alta += 1
 
         print("\n=======================================================")
         print("       REPORTE GENERAL DE SOLICITUDES ACADÉMICAS       ")
         print("=======================================================")
-        print(f"Total de solicitudes registradas : {len(d)}")
-        print(f"  - Pendientes (PEND)            : {c1}")
-        print(f"  - En Revisión (REV)            : {c2}")
-        print(f"  - Aprobadas (APR)              : {c3}")
-        print(f"  - Rechazadas (RECH)            : {c4}")
-        print(f"Solicitudes de prioridad ALTA    : {pa}")
+        print(f"Total de solicitudes registradas : {len(solicitudes)}")
+        print(f"  - Pendientes (PEND)            : {pendiente}")
+        print(f"  - En Revisión (REV)            : {en_revision}")
+        print(f"  - Aprobadas (APR)              : {aprobadas}")
+        print(f"  - Rechazadas (RECH)            : {rechazadas}")
+        print(f"Solicitudes de prioridad ALTA    : {prioridad_alta}")
         print("-------------------------------------------------------")
         print("Detalle de solicitudes:")
-        for x in d:
+        for solicitud in solicitudes:
             print(
-                f"  [#{x['id_solicitud']}] {x['fecha_creacion']} (Vence: {x['fecha_vencimiento']}) - "
-                f"{x['estudiante']['apellido']}, {x['estudiante']['nombre']} (Leg: {x['estudiante']['legajo']}) - "
-                f"Trámite: {x['tipo']} [{x['estado']['codigo']}] -> {x['area_responsable']['responsable_cargo']}"
+                f"  [#{solicitud['id_solicitud']}] {solicitud['fecha_creacion']} (Vence: {solicitud['fecha_vencimiento']}) - "
+                f"{solicitud['estudiante']['apellido']}, {solicitud['estudiante']['nombre']} (Leg: {solicitud['estudiante']['legajo']}) - "
+                f"Trámite: {solicitud['tipo']} [{solicitud['estado']['codigo']}] -> {solicitud['area_responsable']['responsable_cargo']}"
             )
         print("=======================================================\n")
