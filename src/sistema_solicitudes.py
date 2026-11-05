@@ -9,6 +9,16 @@ class CodigoEstado(StrEnum):
     APROBADA = "APR"
     RECHAZADA = "RECH"
     
+class TipoSolicitud(StrEnum):
+    EQUIVALENCIA = "EQUIV"
+    CERTIFICADO = "CERT"
+    EXCEPCION_CORRELATIVIDAD = "EXCEP"
+    BAJA = "BAJA"
+class Prioridad(StrEnum):
+    ALTA = "ALTA"
+    MEDIA = "MEDIA"
+    BAJA = "BAJA"
+    
 class Estado:
     """Representa el estado actual de una solicitud académica."""
 
@@ -110,11 +120,11 @@ class GestorSolicitudesAcademicas:
             print("[ERROR] Nombre, apellido, DNI y descripción son obligatorios.")
             return False
 
-        if tipo_solicitud not in ["EQUIV", "CERT", "EXCEP", "BAJA"]:
+        if tipo_solicitud not in list(TipoSolicitud):
             print(f"[ERROR] Tipo de solicitud '{tipo_solicitud}' no reconocido.")
             return False
 
-        if prioridad not in ["ALTA", "MEDIA", "BAJA"]:
+        if prioridad not in list(Prioridad):
             print(f"[ERROR] Prioridad '{prioridad}' inválida.")
             return False
 
@@ -149,7 +159,7 @@ class GestorSolicitudesAcademicas:
             return False
 
         # Asignación de área responsable y cálculo de días de gestión según trámite
-        if tipo_solicitud == "EQUIV":
+        if tipo_solicitud == TipoSolicitud.EQUIVALENCIA:
             if est.condicion != "REG":
                 print(
                     "[ERROR] Las equivalencias solo pueden ser solicitadas por alumnos REGULARES."
@@ -158,27 +168,27 @@ class GestorSolicitudesAcademicas:
             area = ResponsableArea(
                 "Secretaría Académica", "Dra. Laura Fernandez", "academica@utn.edu.ar"
             )
-            if prioridad == "ALTA":
+            if prioridad == Prioridad.ALTA:
                 dias = 7
-            elif prioridad == "MEDIA":
+            elif prioridad == Prioridad.MEDIA:
                 dias = 15
             else:
                 dias = 30
-        elif tipo_solicitud == "CERT":
+        elif tipo_solicitud == TipoSolicitud.CERTIFICADO:
             area = ResponsableArea(
                 "Departamento de Alumnado", "Lic. Fernando Ruiz", "alumnado@utn.edu.ar"
             )
-            if prioridad == "ALTA":
+            if prioridad == Prioridad.ALTA:
                 dias = 2
-            elif prioridad == "MEDIA":
+            elif prioridad == Prioridad.MEDIA:
                 dias = 5
             else:
                 dias = 10
-        elif tipo_solicitud == "EXCEP":
+        elif tipo_solicitud == TipoSolicitud.EXCEPCION_CORRELATIVIDAD:
             area = ResponsableArea(
                 "Consejo Directivo", "Ing. Roberto Díaz", "consejo@utn.edu.ar"
             )
-            if prioridad == "ALTA":
+            if prioridad == Prioridad.ALTA:
                 dias = 5
             else:
                 dias = 20
@@ -372,7 +382,7 @@ class GestorSolicitudesAcademicas:
             elif x["estado"]["codigo"] == CodigoEstado.RECHAZADA:
                 c4 += 1
 
-            if x["prioridad"] == "ALTA":
+            if x["prioridad"] == Prioridad.ALTA:
                 pa += 1
 
         print("\n=======================================================")
