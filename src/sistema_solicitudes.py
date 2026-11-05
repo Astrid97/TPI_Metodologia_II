@@ -101,21 +101,30 @@ class Solicitud:
         self.area_responsable = area_responsable
         self.dias_vencimiento = dias_vencimiento
 
+class RepositorioSolicitudes:
+    """Responsable de leer y guardar las solicitudes en el archivo JSON."""
+
+    def __init__(self, archivo_db):
+        self.archivo_db = archivo_db
+
+    def existe(self):
+        return os.path.exists(self.archivo_db)
+
+    def leer(self):
+        with open(self.archivo_db, "r", encoding="utf-8") as archivo:
+            return json.load(archivo)
+
+    def guardar(self, datos):
+        with open(self.archivo_db, "w", encoding="utf-8") as archivo:
+            json.dump(datos, archivo, indent=4, ensure_ascii=False)
+
 
 class GestorSolicitudesAcademicas:
     """Clase encargada de gestionar las operaciones sobre las solicitudes."""
 
     def __init__(self, archivo_db="solicitudes_db.json"):
-        self.archivo_db = archivo_db
+        self.repositorio = RepositorioSolicitudes(archivo_db)
         
-    def _leer_datos(self):
-        with open(self.archivo_db, "r", encoding="utf-8") as archivo:
-            return json.load(archivo)
-
-    def _guardar_datos(self, datos):
-        with open(self.archivo_db, "w", encoding="utf-8") as archivo:
-            json.dump(datos, archivo, indent=4, ensure_ascii=False)
-
     def procesar_solicitud(
         self,
         id_solicitud,
@@ -225,9 +234,9 @@ class GestorSolicitudesAcademicas:
 
         # Lectura y guardado en archivo JSON
         datos = []
-        if os.path.exists(self.archivo_db):
+        if self.repositorio.existe():
             try:
-                datos = self._leer_datos()
+                datos = self.repositorio.leer()
             except Exception:
                 datos = []
 
@@ -266,7 +275,7 @@ class GestorSolicitudesAcademicas:
         }
 
         datos.append(nuevo_registro)
-        self._guardar_datos(datos)
+        self.repositorio.guardar(datos)
 
         print(
             f"[OK] Solicitud #{id_solicitud} registrada con éxito. Área: {area.nombre_area} (Plazo: {dias} días, vence: {fecha_venc})."
@@ -276,11 +285,11 @@ class GestorSolicitudesAcademicas:
     def cambiar_estado(
         self, id_solicitud, nuevo_codigo_estado, observacion, fecha_actualizacion
     ):
-        if not os.path.exists(self.archivo_db):
+        if not self.repositorio.existe():
             print("[ERROR] No hay solicitudes registradas.")
             return False
 
-        datos = self._leer_datos()
+        datos = self.repositorio.leer()
 
         if nuevo_codigo_estado not in list(CodigoEstado):
             print(f"[ERROR] Código de estado '{nuevo_codigo_estado}' inválido.")
@@ -308,7 +317,7 @@ class GestorSolicitudesAcademicas:
             print(f"[ERROR] No se encontró la solicitud #{id_solicitud}.")
             return False
 
-        self._guardar_datos(datos)
+        self.repositorio.guardar(datos)
         
         print(
             f"[OK] Estado de solicitud #{id_solicitud} actualizado a '{nuevo_codigo_estado}' ({observacion})."
@@ -318,11 +327,11 @@ class GestorSolicitudesAcademicas:
     def asignar_responsable(
         self, id_solicitud, nueva_area, nuevo_responsable, nuevo_email
     ):
-        if not os.path.exists(self.archivo_db):
+        if not self.repositorio.existe():
             print("[ERROR] No hay solicitudes registradas.")
             return False
 
-        datos = self._leer_datos()
+        datos = self.repositorio.leer()
 
         encontrado = False
         for item in datos:
@@ -337,7 +346,7 @@ class GestorSolicitudesAcademicas:
             print(f"[ERROR] No se encontró la solicitud #{id_solicitud}.")
             return False
 
-        self._guardar_datos(datos)
+        self.repositorio.guardar(datos)
 
         print(
             f"[OK] Solicitud #{id_solicitud} reasignada a {nueva_area} ({nuevo_responsable})."
@@ -345,11 +354,11 @@ class GestorSolicitudesAcademicas:
         return True
 
     def buscar_solicitudes(self, legajo=None, codigo_estado=None):
-        if not os.path.exists(self.archivo_db):
+        if not self.repositorio.existe():
             print("[INFO] Base de datos vacía.")
             return []
 
-        datos = self._leer_datos()
+        datos = self.repositorio.leer()
 
         resultado = []
         for s in datos:
@@ -370,11 +379,11 @@ class GestorSolicitudesAcademicas:
         return resultado
 
     def generar_reporte(self):
-        if not os.path.exists(self.archivo_db):
+        if not self.repositorio.existe():
             print("[INFO] No hay datos para generar el reporte.")
             return
 
-        solicitudes = self._leer_datos()
+        solicitudes = self.repositorio.leer()
 
         pendiente = 0
         en_revision = 0
