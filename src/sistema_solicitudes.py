@@ -1,17 +1,22 @@
 import json
 import os
 from datetime import datetime, timedelta
+from enum import StrEnum        
 
-
+class CodigoEstado(StrEnum):
+    PENDIENTE = "PEND"
+    EN_REVISION = "REV"
+    APROBADA = "APR"
+    RECHAZADA = "RECH"
+    
 class Estado:
     """Representa el estado actual de una solicitud académica."""
 
-    def __init__(self, codigo, descripcion, fecha_actualizacion):
+    def __init__(self, codigo: CodigoEstado, descripcion, fecha_actualizacion):
         self.codigo = codigo
         self.descripcion = descripcion
         self.fecha_actualizacion = fecha_actualizacion
-
-
+        
 class Estudiante:
     """Representa al estudiante que realiza la solicitud."""
 
@@ -123,7 +128,7 @@ class GestorSolicitudesAcademicas:
             condicion_est,
             materias_aprobadas,
         )
-        est_inicial = Estado("PEND", "Pendiente de revisión inicial", fecha_str)
+        est_inicial = Estado(CodigoEstado.PENDIENTE, "Pendiente de revisión inicial", fecha_str)
         resp_prov = ResponsableArea("Sin asignar", "Sin asignar", "")
         sol = Solicitud(
             id_solicitud,
@@ -252,7 +257,7 @@ class GestorSolicitudesAcademicas:
         with open(self.archivo_db, "r", encoding="utf-8") as f:
             datos = json.load(f)
 
-        if nuevo_codigo_estado not in ["PEND", "REV", "APR", "RECH"]:
+        if nuevo_codigo_estado not in list(CodigoEstado):
             print(f"[ERROR] Código de estado '{nuevo_codigo_estado}' inválido.")
             return False
 
@@ -260,8 +265,8 @@ class GestorSolicitudesAcademicas:
         for item in datos:
             if item["id_solicitud"] == id_solicitud:
                 if (
-                    item["estado"]["codigo"] in ["APR", "RECH"]
-                    and nuevo_codigo_estado == "PEND"
+                    item["estado"]["codigo"] in [CodigoEstado.APROBADA, CodigoEstado.RECHAZADA]
+                    and nuevo_codigo_estado == CodigoEstado.PENDIENTE
                 ):
                     print(
                         "[ERROR] No se puede reabrir a PENDIENTE una solicitud ya finalizada."
@@ -358,13 +363,13 @@ class GestorSolicitudesAcademicas:
         pa = 0
 
         for x in d:
-            if x["estado"]["codigo"] == "PEND":
+            if x["estado"]["codigo"] == CodigoEstado.PENDIENTE:
                 c1 += 1
-            elif x["estado"]["codigo"] == "REV":
+            elif x["estado"]["codigo"] == CodigoEstado.EN_REVISION:
                 c2 += 1
-            elif x["estado"]["codigo"] == "APR":
+            elif x["estado"]["codigo"] == CodigoEstado.APROBADA:
                 c3 += 1
-            elif x["estado"]["codigo"] == "RECH":
+            elif x["estado"]["codigo"] == CodigoEstado.RECHAZADA:
                 c4 += 1
 
             if x["prioridad"] == "ALTA":
