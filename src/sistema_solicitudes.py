@@ -3,6 +3,11 @@ import os
 from datetime import datetime, timedelta
 from enum import StrEnum        
 
+#---- Constantes
+LEGAJO_MINIMO = 10000
+LEGAJO_MAXIMO = 999999
+MATERIAS_MINIMAS_LIBRE = 2
+
 class CodigoEstado(StrEnum):
     PENDIENTE = "PEND"
     EN_REVISION = "REV"
@@ -83,17 +88,17 @@ class Solicitud:
         self.dias_vencimiento = dias_vencimiento
 
     def validar_legajo_y_regularidad_estudiante(self):
-        if self.estudiante.legajo < 10000 or self.estudiante.legajo > 999999:
-            return False, "El legajo debe tener entre 5 y 6 dígitos (10000 - 999999)."
+        if self.estudiante.legajo < LEGAJO_MINIMO or self.estudiante.legajo > LEGAJO_MAXIMO:
+            return False, f"El legajo debe tener entre 5 y 6 dígitos ({LEGAJO_MINIMO} - {LEGAJO_MAXIMO})."
         if "@" not in self.estudiante.email or "." not in self.estudiante.email:
             return False, "El email del estudiante no tiene un formato válido."
         if (
             self.estudiante.condicion == CondicionEstudiante.LIBRE
-            and self.estudiante.materias_aprobadas < 2
+            and self.estudiante.materias_aprobadas < MATERIAS_MINIMAS_LIBRE
         ):
             return (
                 False,
-                "Estudiante libre con menos de 2 materias aprobadas no puede iniciar trámites.",
+                f"Estudiante libre con menos de {MATERIAS_MINIMAS_LIBRE} materias aprobadas no puede iniciar trámites.",
             )
         return True, "Estudiante válido."
 
