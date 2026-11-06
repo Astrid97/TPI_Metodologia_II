@@ -25,6 +25,22 @@ class CondicionEstudiante(StrEnum):
     LIBRE = "LIBRE"
     EGRESADO = "EGR"
     
+# ---------- Reglas de seleccion de plazos y areas por tipo de solicitud ----------
+
+PLAZOS_DIAS = {
+    TipoSolicitud.EQUIVALENCIA: {Prioridad.ALTA: 7, Prioridad.MEDIA: 15, Prioridad.BAJA: 30},
+    TipoSolicitud.CERTIFICADO: {Prioridad.ALTA: 2, Prioridad.MEDIA: 5, Prioridad.BAJA: 10},
+    TipoSolicitud.EXCEPCION_CORRELATIVIDAD: {Prioridad.ALTA: 5, Prioridad.MEDIA: 20, Prioridad.BAJA: 20},
+    TipoSolicitud.BAJA: {Prioridad.ALTA: 3, Prioridad.MEDIA: 3, Prioridad.BAJA: 3},
+}
+
+AREAS_POR_TIPO = {
+    TipoSolicitud.EQUIVALENCIA: ("Secretaría Académica", "Dra. Laura Fernandez", "academica@utn.edu.ar"),
+    TipoSolicitud.CERTIFICADO: ("Departamento de Alumnado", "Lic. Fernando Ruiz", "alumnado@utn.edu.ar"),
+    TipoSolicitud.EXCEPCION_CORRELATIVIDAD: ("Consejo Directivo", "Ing. Roberto Díaz", "consejo@utn.edu.ar"),
+    TipoSolicitud.BAJA: ("Departamento de Alumnado", "Lic. Fernando Ruiz", "alumnado@utn.edu.ar"),
+} 
+    
 class Estado:
     """Representa el estado actual de una solicitud académica."""
 
@@ -154,6 +170,11 @@ class GestorSolicitudesAcademicas:
         if prioridad not in list(Prioridad):
             print(f"[ERROR] Prioridad '{prioridad}' inválida.")
             return False
+        
+        # Parsear los valores recibidos (str) a enum para poder buscarlos 
+        # en los diccionario PLAZOS_DIAS y AREAS_POR_TIPO
+        tipo_solicitud = TipoSolicitud(tipo_solicitud)
+        prioridad = Prioridad(prioridad)
 
         # Instanciación inicial de objetos
         est = Estudiante(
@@ -185,46 +206,22 @@ class GestorSolicitudesAcademicas:
             print(f"[RECHAZADA EN VALIDACIÓN] {mensaje_val}")
             return False
 
-        # Asignación de área responsable y cálculo de días de gestión según trámite
-        if tipo_solicitud == TipoSolicitud.EQUIVALENCIA:
-            if est.condicion != CondicionEstudiante.REGULAR:
-                print(
-                    "[ERROR] Las equivalencias solo pueden ser solicitadas por alumnos REGULARES."
-                )
-                return False
-            area = ResponsableArea(
-                "Secretaría Académica", "Dra. Laura Fernandez", "academica@utn.edu.ar"
+        # Regla especial que no está en las tablas porque depende del estudiante:
+        # las equivalencias solo pueden pedirlas alumnos regulares
+        if (
+            tipo_solicitud == TipoSolicitud.EQUIVALENCIA 
+            and est.condicion != CondicionEstudiante.REGULAR
+        ):
+            print(
+                "[ERROR] Las equivalencias solo pueden ser solicitadas por alumnos REGULARES."
             )
-            if prioridad == Prioridad.ALTA:
-                dias = 7
-            elif prioridad == Prioridad.MEDIA:
-                dias = 15
-            else:
-                dias = 30
-        elif tipo_solicitud == TipoSolicitud.CERTIFICADO:
-            area = ResponsableArea(
-                "Departamento de Alumnado", "Lic. Fernando Ruiz", "alumnado@utn.edu.ar"
-            )
-            if prioridad == Prioridad.ALTA:
-                dias = 2
-            elif prioridad == Prioridad.MEDIA:
-                dias = 5
-            else:
-                dias = 10
-        elif tipo_solicitud == TipoSolicitud.EXCEPCION_CORRELATIVIDAD:
-            area = ResponsableArea(
-                "Consejo Directivo", "Ing. Roberto Díaz", "consejo@utn.edu.ar"
-            )
-            if prioridad == Prioridad.ALTA:
-                dias = 5
-            else:
-                dias = 20
-        else:  # Caso "BAJA"
-            area = ResponsableArea(
-                "Departamento de Alumnado", "Lic. Fernando Ruiz", "alumnado@utn.edu.ar"
-            )
-            dias = 3
-
+            return False
+        
+        # Asignación de área responsable y plazo según tipo y prioridad
+        # (*) desagrupa los elementos de la tupla y los pasa uno a uno
+        area = ResponsableArea(*AREAS_POR_TIPO[tipo_solicitud]) 
+        dias = PLAZOS_DIAS[tipo_solicitud][prioridad] 
+        
         sol.area_responsable = area
         sol.dias_vencimiento = dias
 
