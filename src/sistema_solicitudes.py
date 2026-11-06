@@ -205,6 +205,23 @@ class GestorSolicitudesAcademicas:
     def __init__(self, archivo_db="solicitudes_db.json"):
         self.repositorio = RepositorioSolicitudes(archivo_db)
         
+    def _validar_datos_entrada(
+        self, nombre_est, apellido_est, dni_est, descripcion, tipo_solicitud, prioridad
+    ):
+        if not nombre_est or not apellido_est or not dni_est or not descripcion:
+            print("[ERROR] Nombre, apellido, DNI y descripción son obligatorios.")
+            return False
+
+        if tipo_solicitud not in list(TipoSolicitud):
+            print(f"[ERROR] Tipo de solicitud '{tipo_solicitud}' no reconocido.")
+            return False
+
+        if prioridad not in list(Prioridad):
+            print(f"[ERROR] Prioridad '{prioridad}' inválida.")
+            return False
+
+        return True    
+        
     def procesar_solicitud(
         self,
         id_solicitud,
@@ -222,17 +239,9 @@ class GestorSolicitudesAcademicas:
     ):
         print(f"\n[PROCESANDO] Iniciando registro de solicitud #{id_solicitud}...")
 
-        # Validación de datos de entrada
-        if not nombre_est or not apellido_est or not dni_est or not descripcion:
-            print("[ERROR] Nombre, apellido, DNI y descripción son obligatorios.")
-            return False
-
-        if tipo_solicitud not in list(TipoSolicitud):
-            print(f"[ERROR] Tipo de solicitud '{tipo_solicitud}' no reconocido.")
-            return False
-
-        if prioridad not in list(Prioridad):
-            print(f"[ERROR] Prioridad '{prioridad}' inválida.")
+        if not self._validar_datos_entrada(
+            nombre_est, apellido_est, dni_est, descripcion, tipo_solicitud, prioridad
+        ):
             return False
         
         # Parsear los valores recibidos (str) a enum para poder buscarlos 
