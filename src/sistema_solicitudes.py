@@ -179,7 +179,25 @@ class RepositorioSolicitudes:
     def guardar(self, datos):
         with open(self.archivo_db, "w", encoding="utf-8") as archivo:
             json.dump(datos, archivo, indent=4, ensure_ascii=False)
+            
+    def _obtener_solicitudes(self):
+        if not self.existe():
+            return []
+        try:
+            return self.leer()
+        except Exception:
+            return []
+        
+    def existe_id_solicitud(self, id_solicitud):
+        for solicitud in self._obtener_solicitudes():
+            if solicitud["id_solicitud"] == id_solicitud:
+                return True
+        return False
 
+    def agregar_solicitud(self, datos_solicitud):
+        solicitudes = self._obtener_solicitudes()
+        solicitudes.append(datos_solicitud)
+        self.guardar(solicitudes)
 
 class GestorSolicitudesAcademicas:
     """Clase encargada de gestionar las operaciones sobre las solicitudes."""
@@ -273,23 +291,13 @@ class GestorSolicitudesAcademicas:
 
         fecha_venc = sol.calcular_fecha_vencimiento()
 
-        # Lectura y guardado en archivo JSON
-        datos = []
-        if self.repositorio.existe():
-            try:
-                datos = self.repositorio.leer()
-            except Exception:
-                datos = []
 
-        for item in datos:
-            if item["id_solicitud"] == id_solicitud:
-                print(f"[ERROR] Ya existe una solicitud con el ID {id_solicitud}.")
-                return False
+        if self.repositorio.existe_id_solicitud(id_solicitud):
+            print(f"[ERROR] Ya existe una solicitud con el ID {id_solicitud}.")
+            return False
 
-        nuevo_registro = sol.convertir_a_diccionario()
-
-        datos.append(nuevo_registro)
-        self.repositorio.guardar(datos)
+        # Agregar solicitud con formato diccionario al repositorio
+        self.repositorio.agregar_solicitud(sol.convertir_a_diccionario())
 
         print(
             f"[OK] Solicitud #{id_solicitud} registrada con éxito. Área: {area.nombre_area} (Plazo: {dias} días, vence: {fecha_venc})."
