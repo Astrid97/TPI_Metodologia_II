@@ -220,22 +220,23 @@ class DatosSolicitud:
 class GestorSolicitudesAcademicas:
     """Clase encargada de gestionar las operaciones sobre las solicitudes."""
 
-    def __init__(self, archivo_db="solicitudes_db.json", repositorio=None):
+    def __init__(self, archivo_db="solicitudes_db.json", repositorio=None, mostrar=print):
         self.repositorio = repositorio or RepositorioSolicitudes(archivo_db)
-
+        self.mostrar = mostrar
+        
 # ----------    
     def _validar_datos_entrada(self, datos:DatosSolicitud):
         
         if not datos.nombre or not datos.apellido or not datos.dni or not datos.descripcion:
-            print("[ERROR] Nombre, apellido, DNI y descripción son obligatorios.")
+            self.mostrar("[ERROR] Nombre, apellido, DNI y descripción son obligatorios.")
             return False
 
         if datos.tipo_solicitud not in list(TipoSolicitud):
-            print(f"[ERROR] Tipo de solicitud '{datos.tipo_solicitud}' no reconocido.")
+            self.mostrar(f"[ERROR] Tipo de solicitud '{datos.tipo_solicitud}' no reconocido.")
             return False
 
         if datos.prioridad not in list(Prioridad):
-            print(f"[ERROR] Prioridad '{datos.prioridad}' inválida.")
+            self.mostrar(f"[ERROR] Prioridad '{datos.prioridad}' inválida.")
             return False
         return True    
     
@@ -243,7 +244,7 @@ class GestorSolicitudesAcademicas:
     def _verificar_condiciones_academicas(self, est, tipo_solicitud):
         es_valido, mensaje_val = est.validar_legajo_y_regularidad_estudiante()
         if not es_valido:
-            print(f"[RECHAZADA EN VALIDACIÓN] {mensaje_val}")
+            self.mostrar(f"[RECHAZADA EN VALIDACIÓN] {mensaje_val}")
             return False
         
         # Regla especial que no está en las tablas porque depende del estudiante
@@ -252,7 +253,7 @@ class GestorSolicitudesAcademicas:
             tipo_solicitud == TipoSolicitud.EQUIVALENCIA
             and est.condicion != CondicionEstudiante.REGULAR
         ):
-            print(
+            self.mostrar(
                 "[ERROR] Las equivalencias solo pueden ser solicitadas por alumnos REGULARES."
             )
             return False
@@ -261,7 +262,7 @@ class GestorSolicitudesAcademicas:
 # ------------        
     def procesar_solicitud(self,datos: DatosSolicitud):
         
-        print(f"\n[PROCESANDO] Iniciando registro de solicitud #{datos.id_solicitud}...")
+        self.mostrar(f"\n[PROCESANDO] Iniciando registro de solicitud #{datos.id_solicitud}...")
         
         if not self._validar_datos_entrada(datos):
             return False
@@ -312,13 +313,13 @@ class GestorSolicitudesAcademicas:
         fecha_venc = sol.calcular_fecha_vencimiento()
 
         if self.repositorio.existe_id_solicitud(datos.id_solicitud):
-            print(f"[ERROR] Ya existe una solicitud con el ID {datos.id_solicitud}.")
+            self.mostrar(f"[ERROR] Ya existe una solicitud con el ID {datos.id_solicitud}.")
             return False
 
         # Agregar solicitud con formato diccionario al repositorio
         self.repositorio.agregar_solicitud(sol.convertir_a_diccionario())
 
-        print(
+        self.mostrar(
             f"[OK] Solicitud #{datos.id_solicitud} registrada con éxito. Área: {area.nombre_area} (Plazo: {dias} días, vence: {fecha_venc})."
         )
         return True
@@ -328,13 +329,13 @@ class GestorSolicitudesAcademicas:
         self, id_solicitud, nuevo_codigo_estado, observacion, fecha_actualizacion
     ):
         if not self.repositorio.existe():
-            print("[ERROR] No hay solicitudes registradas.")
+            self.mostrar("[ERROR] No hay solicitudes registradas.")
             return False
 
         datos = self.repositorio.leer()
 
         if nuevo_codigo_estado not in list(CodigoEstado):
-            print(f"[ERROR] Código de estado '{nuevo_codigo_estado}' inválido.")
+            self.mostrar(f"[ERROR] Código de estado '{nuevo_codigo_estado}' inválido.")
             return False
 
         encontrado = False
@@ -344,7 +345,7 @@ class GestorSolicitudesAcademicas:
                     item["estado"]["codigo"] in [CodigoEstado.APROBADA, CodigoEstado.RECHAZADA]
                     and nuevo_codigo_estado == CodigoEstado.PENDIENTE
                 ):
-                    print(
+                    self.mostrar(
                         "[ERROR] No se puede reabrir a PENDIENTE una solicitud ya finalizada."
                     )
                     return False
@@ -356,12 +357,12 @@ class GestorSolicitudesAcademicas:
                 break
 
         if not encontrado:
-            print(f"[ERROR] No se encontró la solicitud #{id_solicitud}.")
+            self.mostrar(f"[ERROR] No se encontró la solicitud #{id_solicitud}.")
             return False
 
         self.repositorio.guardar(datos)
         
-        print(
+        self.mostrar(
             f"[OK] Estado de solicitud #{id_solicitud} actualizado a '{nuevo_codigo_estado}' ({observacion})."
         )
         return True
@@ -371,7 +372,7 @@ class GestorSolicitudesAcademicas:
         self, id_solicitud, nueva_area, nuevo_responsable, nuevo_email
     ):
         if not self.repositorio.existe():
-            print("[ERROR] No hay solicitudes registradas.")
+            self.mostrar("[ERROR] No hay solicitudes registradas.")
             return False
 
         datos = self.repositorio.leer()
@@ -386,12 +387,12 @@ class GestorSolicitudesAcademicas:
                 break
 
         if not encontrado:
-            print(f"[ERROR] No se encontró la solicitud #{id_solicitud}.")
+            self.mostrar(f"[ERROR] No se encontró la solicitud #{id_solicitud}.")
             return False
 
         self.repositorio.guardar(datos)
 
-        print(
+        self.mostrar(
             f"[OK] Solicitud #{id_solicitud} reasignada a {nueva_area} ({nuevo_responsable})."
         )
         return True
@@ -399,7 +400,7 @@ class GestorSolicitudesAcademicas:
 # ------------      
     def buscar_solicitudes(self, legajo=None, codigo_estado=None):
         if not self.repositorio.existe():
-            print("[INFO] Base de datos vacía.")
+            self.mostrar("[INFO] Base de datos vacía.")
             return []
 
         datos = self.repositorio.leer()
@@ -413,9 +414,9 @@ class GestorSolicitudesAcademicas:
             if cumple_legajo and cumple_estado:
                 resultado.append(s)
 
-        print(f"\n--- RESULTADOS DE BÚSQUEDA (Encontradas: {len(resultado)}) ---")
+        self.mostrar(f"\n--- RESULTADOS DE BÚSQUEDA (Encontradas: {len(resultado)}) ---")
         for r in resultado:
-            print(
+            self.mostrar(
                 f"ID #{r['id_solicitud']} | Legajo: {r['estudiante']['legajo']} ({r['estudiante']['apellido']}, {r['estudiante']['nombre']}) "
                 f"| Tipo: {r['tipo']} | Prioridad: {r['prioridad']} | Estado: {r['estado']['codigo']} "
                 f"| Área: {r['area_responsable']['nombre_area']}"
@@ -425,7 +426,7 @@ class GestorSolicitudesAcademicas:
 # ------------      
     def generar_reporte(self):
         if not self.repositorio.existe():
-            print("[INFO] No hay datos para generar el reporte.")
+            self.mostrar("[INFO] No hay datos para generar el reporte.")
             return
 
         solicitudes = self.repositorio.leer()
@@ -449,21 +450,21 @@ class GestorSolicitudesAcademicas:
             if solicitud["prioridad"] == Prioridad.ALTA:
                 prioridad_alta += 1
 
-        print("\n=======================================================")
-        print("       REPORTE GENERAL DE SOLICITUDES ACADÉMICAS       ")
-        print("=======================================================")
-        print(f"Total de solicitudes registradas : {len(solicitudes)}")
-        print(f"  - Pendientes (PEND)            : {pendiente}")
-        print(f"  - En Revisión (REV)            : {en_revision}")
-        print(f"  - Aprobadas (APR)              : {aprobada}")
-        print(f"  - Rechazadas (RECH)            : {rechazada}")
-        print(f"Solicitudes de prioridad ALTA    : {prioridad_alta}")
-        print("-------------------------------------------------------")
-        print("Detalle de solicitudes:")
+        self.mostrar("\n=======================================================")
+        self.mostrar("       REPORTE GENERAL DE SOLICITUDES ACADÉMICAS       ")
+        self.mostrar("=======================================================")
+        self.mostrar(f"Total de solicitudes registradas : {len(solicitudes)}")
+        self.mostrar(f"  - Pendientes (PEND)            : {pendiente}")
+        self.mostrar(f"  - En Revisión (REV)            : {en_revision}")
+        self.mostrar(f"  - Aprobadas (APR)              : {aprobada}")
+        self.mostrar(f"  - Rechazadas (RECH)            : {rechazada}")
+        self.mostrar(f"Solicitudes de prioridad ALTA    : {prioridad_alta}")
+        self.mostrar("-------------------------------------------------------")
+        self.mostrar("Detalle de solicitudes:")
         for solicitud in solicitudes:
-            print(
+            self.mostrar(
                 f"  [#{solicitud['id_solicitud']}] {solicitud['fecha_creacion']} (Vence: {solicitud['fecha_vencimiento']}) - "
                 f"{solicitud['estudiante']['apellido']}, {solicitud['estudiante']['nombre']} (Leg: {solicitud['estudiante']['legajo']}) - "
                 f"Trámite: {solicitud['tipo']} [{solicitud['estado']['codigo']}] -> {solicitud['area_responsable']['responsable_cargo']}"
             )
-        print("=======================================================\n")
+        self.mostrar("=======================================================\n")
