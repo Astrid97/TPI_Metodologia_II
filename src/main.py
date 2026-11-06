@@ -5,7 +5,6 @@ from sistema_solicitudes import GestorSolicitudesAcademicas
 from sistema_solicitudes import DatosSolicitud
 
 
-
 def ejecutar_escenario_demostracion():
     """
     Ejecuta un lote completo de pruebas funcionales verificables.
@@ -22,73 +21,87 @@ def ejecutar_escenario_demostracion():
     print("=======================================================")
 
     # 1. Registro de solicitudes válidas
-    gestor.procesar_solicitud(DatosSolicitud(
-        id_solicitud=101,
-        nombre="Juan",
-        apellido="Pérez",
-        legajo=114520,
-        dni="42111222",
-        email="juan.perez@tupad.utn.edu.ar",
-        condicion="REG",
-        materias_aprobadas=12,
-        tipo_solicitud="EQUIV",
-        prioridad="ALTA",
-        descripcion="Solicitud de equivalencia de Análisis Matemático I",
-        fecha="2026-04-10",
-    ))
-    gestor.procesar_solicitud(DatosSolicitud(
-        id_solicitud=102,
-        nombre="María",
-        apellido="López",
-        legajo=118930,
-        dni="43555666",
-        email="maria.lopez@tupad.utn.edu.ar",
-        condicion="REG",
-        materias_aprobadas=8,
-        tipo_solicitud="CERT",
-        prioridad="MEDIA",
-        descripcion="Certificado de alumno regular para presentar en el trabajo",
-        fecha="2026-04-10",
-    ))
-    gestor.procesar_solicitud(DatosSolicitud(
-        id_solicitud=103,
-        nombre="Lucas",
-        apellido="Martínez",
-        legajo=120045,
-        dni="44888999",
-        email="lucas.martinez@tupad.utn.edu.ar",
-        condicion="LIBRE",
-        materias_aprobadas=4,
-        tipo_solicitud="EXCEP",
-        prioridad="ALTA",
-        descripcion="Excepción de correlatividad para cursar Metodología II",
-        fecha="2026-04-11",
-    ))
+    gestor.procesar_solicitud(
+        DatosSolicitud(
+            id_solicitud=101,
+            nombre="Juan",
+            apellido="Pérez",
+            legajo=114520,
+            dni="42111222",
+            email="juan.perez@tupad.utn.edu.ar",
+            condicion="REG",
+            materias_aprobadas=12,
+            tipo_solicitud="EQUIV",
+            prioridad="ALTA",
+            descripcion="Solicitud de equivalencia de Análisis Matemático I",
+            fecha="2026-04-10",
+        )
+    )
+    gestor.procesar_solicitud(
+        DatosSolicitud(
+            id_solicitud=102,
+            nombre="María",
+            apellido="López",
+            legajo=118930,
+            dni="43555666",
+            email="maria.lopez@tupad.utn.edu.ar",
+            condicion="REG",
+            materias_aprobadas=8,
+            tipo_solicitud="CERT",
+            prioridad="MEDIA",
+            descripcion="Certificado de alumno regular para presentar en el trabajo",
+            fecha="2026-04-10",
+        )
+    )
+    gestor.procesar_solicitud(
+        DatosSolicitud(
+            id_solicitud=103,
+            nombre="Lucas",
+            apellido="Martínez",
+            legajo=120045,
+            dni="44888999",
+            email="lucas.martinez@tupad.utn.edu.ar",
+            condicion="LIBRE",
+            materias_aprobadas=4,
+            tipo_solicitud="EXCEP",
+            prioridad="ALTA",
+            descripcion="Excepción de correlatividad para cursar Metodología II",
+            fecha="2026-04-11",
+        )
+    )
 
     # 2. Caso de validación rechazada (Estudiante libre con menos de 2 materias)
-    gestor.procesar_solicitud(DatosSolicitud(
-        id_solicitud=104,
-        nombre="Pedro",
-        apellido="Gómez",
-        legajo=125001,
-        dni="45000111",
-        email="pedro.gomez@tupad.utn.edu.ar",
-        condicion="LIBRE",
-        materias_aprobadas=1,
-        tipo_solicitud="CERT",
-        prioridad="BAJA",
-        descripcion="Certificado de materias rendidas",
-        fecha="2026-04-11",
-    ))
+    gestor.procesar_solicitud(
+        DatosSolicitud(
+            id_solicitud=104,
+            nombre="Pedro",
+            apellido="Gómez",
+            legajo=125001,
+            dni="45000111",
+            email="pedro.gomez@tupad.utn.edu.ar",
+            condicion="LIBRE",
+            materias_aprobadas=1,
+            tipo_solicitud="CERT",
+            prioridad="BAJA",
+            descripcion="Certificado de materias rendidas",
+            fecha="2026-04-11",
+        )
+    )
 
     # 3. Cambio de estados
     print("\n--- Ejecutando cambios de estado ---")
-    gestor.cambiar_estado(101, "REV", "Documentación recibida en Secretaría Académica", "2026-04-12")
-    gestor.cambiar_estado(102, "APR", "Certificado emitido y enviado por correo", "2026-04-12")
+    gestor.cambiar_estado(
+        101, "REV", "Documentación recibida en Secretaría Académica", "2026-04-12"
+    )
+    gestor.cambiar_estado(
+        102, "APR", "Certificado emitido y enviado por correo", "2026-04-12"
+    )
 
     # 4. Reasignación de responsable
     print("\n--- Ejecutando reasignación de responsable ---")
-    gestor.asignar_responsable(103, "Dirección de Carrera TUP", "Mg. Sofía Peralta", "tup@utn.edu.ar")
+    gestor.asignar_responsable(
+        103, "Dirección de Carrera TUP", "Mg. Sofía Peralta", "tup@utn.edu.ar"
+    )
 
     # 5. Búsqueda filtrada
     gestor.buscar_solicitudes(legajo=114520)
@@ -124,22 +137,26 @@ def menu_principal():
                 prioridad = input("Prioridad (ALTA/MEDIA/BAJA): ").upper()
                 desc = input("Descripción del pedido: ")
                 fecha = datetime.now().strftime("%Y-%m-%d")
-                gestor.procesar_solicitud(DatosSolicitud(
-                    id_solicitud=id_sol,
-                    nombre=nombre,
-                    apellido=apellido,
-                    legajo=legajo,
-                    dni=dni,
-                    email=email,
-                    condicion=condicion,
-                    materias_aprobadas=materias,
-                    tipo_solicitud=tipo,
-                    prioridad=prioridad,
-                    descripcion=desc,
-                    fecha=fecha,
-                ))
+                gestor.procesar_solicitud(
+                    DatosSolicitud(
+                        id_solicitud=id_sol,
+                        nombre=nombre,
+                        apellido=apellido,
+                        legajo=legajo,
+                        dni=dni,
+                        email=email,
+                        condicion=condicion,
+                        materias_aprobadas=materias,
+                        tipo_solicitud=tipo,
+                        prioridad=prioridad,
+                        descripcion=desc,
+                        fecha=fecha,
+                    )
+                )
             except ValueError:
-                print("[ERROR] Ingrese valores numéricos válidos para ID, legajo y materias.")
+                print(
+                    "[ERROR] Ingrese valores numéricos válidos para ID, legajo y materias."
+                )
         elif opcion == "2":
             try:
                 id_sol = int(input("ID de la solicitud: "))

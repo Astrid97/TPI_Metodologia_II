@@ -1,47 +1,81 @@
 import json
 import os
 from datetime import datetime, timedelta
-from enum import StrEnum        
+from enum import StrEnum
 from dataclasses import dataclass
+
 
 class CodigoEstado(StrEnum):
     PENDIENTE = "PEND"
     EN_REVISION = "REV"
     APROBADA = "APR"
     RECHAZADA = "RECH"
-    
+
+
 class TipoSolicitud(StrEnum):
     EQUIVALENCIA = "EQUIV"
     CERTIFICADO = "CERT"
     EXCEPCION_CORRELATIVIDAD = "EXCEP"
     BAJA = "BAJA"
-    
+
+
 class Prioridad(StrEnum):
     ALTA = "ALTA"
     MEDIA = "MEDIA"
     BAJA = "BAJA"
-    
+
+
 class CondicionEstudiante(StrEnum):
     REGULAR = "REG"
     LIBRE = "LIBRE"
     EGRESADO = "EGR"
-    
+
+
 # ---------- Reglas de seleccion de plazos y areas por tipo de solicitud ----------
 
 PLAZOS_DIAS = {
-    TipoSolicitud.EQUIVALENCIA: {Prioridad.ALTA: 7, Prioridad.MEDIA: 15, Prioridad.BAJA: 30},
-    TipoSolicitud.CERTIFICADO: {Prioridad.ALTA: 2, Prioridad.MEDIA: 5, Prioridad.BAJA: 10},
-    TipoSolicitud.EXCEPCION_CORRELATIVIDAD: {Prioridad.ALTA: 5, Prioridad.MEDIA: 20, Prioridad.BAJA: 20},
+    TipoSolicitud.EQUIVALENCIA: {
+        Prioridad.ALTA: 7,
+        Prioridad.MEDIA: 15,
+        Prioridad.BAJA: 30,
+    },
+    TipoSolicitud.CERTIFICADO: {
+        Prioridad.ALTA: 2,
+        Prioridad.MEDIA: 5,
+        Prioridad.BAJA: 10,
+    },
+    TipoSolicitud.EXCEPCION_CORRELATIVIDAD: {
+        Prioridad.ALTA: 5,
+        Prioridad.MEDIA: 20,
+        Prioridad.BAJA: 20,
+    },
     TipoSolicitud.BAJA: {Prioridad.ALTA: 3, Prioridad.MEDIA: 3, Prioridad.BAJA: 3},
 }
 
 AREAS_POR_TIPO = {
-    TipoSolicitud.EQUIVALENCIA: ("Secretaría Académica", "Dra. Laura Fernandez", "academica@utn.edu.ar"),
-    TipoSolicitud.CERTIFICADO: ("Departamento de Alumnado", "Lic. Fernando Ruiz", "alumnado@utn.edu.ar"),
-    TipoSolicitud.EXCEPCION_CORRELATIVIDAD: ("Consejo Directivo", "Ing. Roberto Díaz", "consejo@utn.edu.ar"),
-    TipoSolicitud.BAJA: ("Departamento de Alumnado", "Lic. Fernando Ruiz", "alumnado@utn.edu.ar"),
-} 
-    
+    TipoSolicitud.EQUIVALENCIA: (
+        "Secretaría Académica",
+        "Dra. Laura Fernandez",
+        "academica@utn.edu.ar",
+    ),
+    TipoSolicitud.CERTIFICADO: (
+        "Departamento de Alumnado",
+        "Lic. Fernando Ruiz",
+        "alumnado@utn.edu.ar",
+    ),
+    TipoSolicitud.EXCEPCION_CORRELATIVIDAD: (
+        "Consejo Directivo",
+        "Ing. Roberto Díaz",
+        "consejo@utn.edu.ar",
+    ),
+    TipoSolicitud.BAJA: (
+        "Departamento de Alumnado",
+        "Lic. Fernando Ruiz",
+        "alumnado@utn.edu.ar",
+    ),
+}
+
+
 class Estado:
     """Representa el estado actual de una solicitud académica."""
 
@@ -49,18 +83,19 @@ class Estado:
         self.codigo = codigo
         self.descripcion = descripcion
         self.fecha_actualizacion = fecha_actualizacion
-        
+
     def convertir_a_diccionario(self):
         return {
             "codigo": self.codigo,
             "descripcion": self.descripcion,
             "fecha_actualizacion": self.fecha_actualizacion,
         }
-        
+
+
 class Estudiante:
     """Representa al estudiante que realiza la solicitud."""
-    
-    #---- Constantes
+
+    # ---- Constantes
     LEGAJO_MINIMO = 10000
     LEGAJO_MAXIMO = 999999
     MATERIAS_MINIMAS_LIBRE = 2
@@ -75,7 +110,7 @@ class Estudiante:
         self.email = email
         self.condicion = condicion
         self.materias_aprobadas = materias_aprobadas
-        
+
     def convertir_a_diccionario(self):
         return {
             "nombre": self.nombre,
@@ -86,10 +121,13 @@ class Estudiante:
             "condicion": self.condicion,
             "materias_aprobadas": self.materias_aprobadas,
         }
-        
+
     def validar_legajo_y_regularidad_estudiante(self):
         if self.legajo < self.LEGAJO_MINIMO or self.legajo > self.LEGAJO_MAXIMO:
-            return False, f"El legajo debe tener entre 5 y 6 dígitos ({self.LEGAJO_MINIMO} - {self.LEGAJO_MAXIMO})."
+            return (
+                False,
+                f"El legajo debe tener entre 5 y 6 dígitos ({self.LEGAJO_MINIMO} - {self.LEGAJO_MAXIMO}).",
+            )
         if "@" not in self.email or "." not in self.email:
             return False, "El email del estudiante no tiene un formato válido."
         if (
@@ -102,6 +140,7 @@ class Estudiante:
             )
         return True, "Estudiante válido."
 
+
 class ResponsableArea:
     """Representa el área administrativa o académica asignada."""
 
@@ -109,19 +148,18 @@ class ResponsableArea:
         self.nombre_area = nombre_area
         self.responsable_cargo = responsable_cargo
         self.email_contacto = email_contacto
-    
+
     def convertir_a_diccionario(self):
         return {
             "nombre_area": self.nombre_area,
             "responsable_cargo": self.responsable_cargo,
             "email_contacto": self.email_contacto,
-        }    
-        
+        }
 
 
 class Solicitud:
     """Representa una solicitud académica realizada por un estudiante."""
-    
+
     FORMATO_FECHA = "%Y-%m-%d"
 
     def __init__(
@@ -145,11 +183,11 @@ class Solicitud:
         self.estado = estado
         self.area_responsable = area_responsable
         self.dias_vencimiento = dias_vencimiento
-        
+
     def calcular_fecha_vencimiento(self):
         fecha_creacion = datetime.strptime(self.fecha_creacion, self.FORMATO_FECHA)
         fecha_vencimiento = fecha_creacion + timedelta(days=self.dias_vencimiento)
-        return fecha_vencimiento.strftime(self.FORMATO_FECHA)   
+        return fecha_vencimiento.strftime(self.FORMATO_FECHA)
 
     def convertir_a_diccionario(self):
         return {
@@ -164,6 +202,8 @@ class Solicitud:
             "estado": self.estado.convertir_a_diccionario(),
             "area_responsable": self.area_responsable.convertir_a_diccionario(),
         }
+
+
 class RepositorioSolicitudes:
     """Responsable de leer y guardar las solicitudes en el archivo JSON."""
 
@@ -180,7 +220,7 @@ class RepositorioSolicitudes:
     def guardar(self, datos):
         with open(self.archivo_db, "w", encoding="utf-8") as archivo:
             json.dump(datos, archivo, indent=4, ensure_ascii=False)
-            
+
     def _obtener_solicitudes(self):
         if not self.existe():
             return []
@@ -188,7 +228,7 @@ class RepositorioSolicitudes:
             return self.leer()
         except Exception:
             return []
-        
+
     def existe_id_solicitud(self, id_solicitud):
         for solicitud in self._obtener_solicitudes():
             if solicitud["id_solicitud"] == id_solicitud:
@@ -199,7 +239,8 @@ class RepositorioSolicitudes:
         solicitudes = self._obtener_solicitudes()
         solicitudes.append(datos_solicitud)
         self.guardar(solicitudes)
-        
+
+
 @dataclass(frozen=True)
 class DatosSolicitud:
     """Corresponde a los datos que se ingresan para registrar una nueva solocitud"""
@@ -217,36 +258,46 @@ class DatosSolicitud:
     descripcion: str
     fecha: str
 
+
 class GestorSolicitudesAcademicas:
     """Clase encargada de gestionar las operaciones sobre las solicitudes."""
 
-    def __init__(self, archivo_db="solicitudes_db.json", repositorio=None, mostrar=print):
+    def __init__(
+        self, archivo_db="solicitudes_db.json", repositorio=None, mostrar=print
+    ):
         self.repositorio = repositorio or RepositorioSolicitudes(archivo_db)
         self.mostrar = mostrar
-        
-# ----------    
-    def _validar_datos_entrada(self, datos:DatosSolicitud):
-        
-        if not datos.nombre or not datos.apellido or not datos.dni or not datos.descripcion:
-            self.mostrar("[ERROR] Nombre, apellido, DNI y descripción son obligatorios.")
+
+    def _validar_datos_entrada(self, datos: DatosSolicitud):
+
+        if (
+            not datos.nombre
+            or not datos.apellido
+            or not datos.dni
+            or not datos.descripcion
+        ):
+            self.mostrar(
+                "[ERROR] Nombre, apellido, DNI y descripción son obligatorios."
+            )
             return False
 
         if datos.tipo_solicitud not in list(TipoSolicitud):
-            self.mostrar(f"[ERROR] Tipo de solicitud '{datos.tipo_solicitud}' no reconocido.")
+            self.mostrar(
+                f"[ERROR] Tipo de solicitud '{datos.tipo_solicitud}' no reconocido."
+            )
             return False
 
         if datos.prioridad not in list(Prioridad):
             self.mostrar(f"[ERROR] Prioridad '{datos.prioridad}' inválida.")
             return False
-        return True    
-    
-# ----------   
+        return True
+
     def _verificar_condiciones_academicas(self, est, tipo_solicitud):
         es_valido, mensaje_val = est.validar_legajo_y_regularidad_estudiante()
         if not es_valido:
             self.mostrar(f"[RECHAZADA EN VALIDACIÓN] {mensaje_val}")
             return False
-        
+
         # Regla especial que no está en las tablas porque depende del estudiante
         # y del tipo de trámite: las equivalencias solo pueden pedirlas alumnos regulares
         if (
@@ -258,18 +309,19 @@ class GestorSolicitudesAcademicas:
             )
             return False
         return True
-    
-# ------------        
-    def procesar_solicitud(self,datos: DatosSolicitud):
-        
-        self.mostrar(f"\n[PROCESANDO] Iniciando registro de solicitud #{datos.id_solicitud}...")
-        
+
+    def procesar_solicitud(self, datos: DatosSolicitud):
+
+        self.mostrar(
+            f"\n[PROCESANDO] Iniciando registro de solicitud #{datos.id_solicitud}..."
+        )
+
         if not self._validar_datos_entrada(datos):
             return False
-        
+
         # Convertir los textos recibidos a enum (necesario para buscar en
         # PLAZOS_DIAS y AREAS_POR_TIPO)
-        
+
         tipo_solicitud = TipoSolicitud(datos.tipo_solicitud)
         prioridad = Prioridad(datos.prioridad)
 
@@ -283,11 +335,13 @@ class GestorSolicitudesAcademicas:
             datos.condicion,
             datos.materias_aprobadas,
         )
-        
-        est_inicial = Estado(CodigoEstado.PENDIENTE, "Pendiente de revisión inicial", datos.fecha)
-        
+
+        est_inicial = Estado(
+            CodigoEstado.PENDIENTE, "Pendiente de revisión inicial", datos.fecha
+        )
+
         resp_prov = ResponsableArea("Sin asignar", "Sin asignar", "")
-        
+
         sol = Solicitud(
             datos.id_solicitud,
             est,
@@ -301,19 +355,21 @@ class GestorSolicitudesAcademicas:
         )
         if not self._verificar_condiciones_academicas(est, tipo_solicitud):
             return False
-        
+
         # Asignación de área responsable y plazo según tipo y prioridad
         # (*) desagrupa los elementos de la tupla y los pasa uno a uno
-        area = ResponsableArea(*AREAS_POR_TIPO[tipo_solicitud]) 
-        dias = PLAZOS_DIAS[tipo_solicitud][prioridad] 
-        
+        area = ResponsableArea(*AREAS_POR_TIPO[tipo_solicitud])
+        dias = PLAZOS_DIAS[tipo_solicitud][prioridad]
+
         sol.area_responsable = area
         sol.dias_vencimiento = dias
 
         fecha_venc = sol.calcular_fecha_vencimiento()
 
         if self.repositorio.existe_id_solicitud(datos.id_solicitud):
-            self.mostrar(f"[ERROR] Ya existe una solicitud con el ID {datos.id_solicitud}.")
+            self.mostrar(
+                f"[ERROR] Ya existe una solicitud con el ID {datos.id_solicitud}."
+            )
             return False
 
         # Agregar solicitud con formato diccionario al repositorio
@@ -323,8 +379,7 @@ class GestorSolicitudesAcademicas:
             f"[OK] Solicitud #{datos.id_solicitud} registrada con éxito. Área: {area.nombre_area} (Plazo: {dias} días, vence: {fecha_venc})."
         )
         return True
-    
-# ------------      
+
     def cambiar_estado(
         self, id_solicitud, nuevo_codigo_estado, observacion, fecha_actualizacion
     ):
@@ -342,7 +397,8 @@ class GestorSolicitudesAcademicas:
         for item in datos:
             if item["id_solicitud"] == id_solicitud:
                 if (
-                    item["estado"]["codigo"] in [CodigoEstado.APROBADA, CodigoEstado.RECHAZADA]
+                    item["estado"]["codigo"]
+                    in [CodigoEstado.APROBADA, CodigoEstado.RECHAZADA]
                     and nuevo_codigo_estado == CodigoEstado.PENDIENTE
                 ):
                     self.mostrar(
@@ -361,13 +417,12 @@ class GestorSolicitudesAcademicas:
             return False
 
         self.repositorio.guardar(datos)
-        
+
         self.mostrar(
             f"[OK] Estado de solicitud #{id_solicitud} actualizado a '{nuevo_codigo_estado}' ({observacion})."
         )
         return True
-    
-# ------------      
+
     def asignar_responsable(
         self, id_solicitud, nueva_area, nuevo_responsable, nuevo_email
     ):
@@ -396,8 +451,7 @@ class GestorSolicitudesAcademicas:
             f"[OK] Solicitud #{id_solicitud} reasignada a {nueva_area} ({nuevo_responsable})."
         )
         return True
-    
-# ------------      
+
     def buscar_solicitudes(self, legajo=None, codigo_estado=None):
         if not self.repositorio.existe():
             self.mostrar("[INFO] Base de datos vacía.")
@@ -407,14 +461,18 @@ class GestorSolicitudesAcademicas:
 
         resultado = []
         for solicitud in datos:
-            cumple_legajo = (legajo is None) or (solicitud["estudiante"]["legajo"] == legajo)
+            cumple_legajo = (legajo is None) or (
+                solicitud["estudiante"]["legajo"] == legajo
+            )
             cumple_estado = (codigo_estado is None) or (
                 solicitud["estado"]["codigo"] == codigo_estado
             )
             if cumple_legajo and cumple_estado:
                 resultado.append(solicitud)
 
-        self.mostrar(f"\n--- RESULTADOS DE BÚSQUEDA (Encontradas: {len(resultado)}) ---")
+        self.mostrar(
+            f"\n--- RESULTADOS DE BÚSQUEDA (Encontradas: {len(resultado)}) ---"
+        )
         for encontrada in resultado:
             self.mostrar(
                 f"ID #{encontrada['id_solicitud']} | Legajo: {encontrada['estudiante']['legajo']} ({encontrada['estudiante']['apellido']}, {encontrada['estudiante']['nombre']}) "
@@ -422,8 +480,7 @@ class GestorSolicitudesAcademicas:
                 f"| Área: {encontrada['area_responsable']['nombre_area']}"
             )
         return resultado
-    
-# ------------      
+
     def generar_reporte(self):
         if not self.repositorio.existe():
             self.mostrar("[INFO] No hay datos para generar el reporte.")
