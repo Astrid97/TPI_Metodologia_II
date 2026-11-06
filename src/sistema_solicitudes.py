@@ -49,6 +49,13 @@ class Estado:
         self.descripcion = descripcion
         self.fecha_actualizacion = fecha_actualizacion
         
+    def convertir_a_diccionario(self):
+        return {
+            "codigo": self.codigo,
+            "descripcion": self.descripcion,
+            "fecha_actualizacion": self.fecha_actualizacion,
+        }
+        
 class Estudiante:
     """Representa al estudiante que realiza la solicitud."""
     
@@ -67,6 +74,17 @@ class Estudiante:
         self.email = email
         self.condicion = condicion
         self.materias_aprobadas = materias_aprobadas
+        
+    def convertir_a_diccionario(self):
+        return {
+            "nombre": self.nombre,
+            "apellido": self.apellido,
+            "legajo": self.legajo,
+            "dni": self.dni,
+            "email": self.email,
+            "condicion": self.condicion,
+            "materias_aprobadas": self.materias_aprobadas,
+        }
         
     def validar_legajo_y_regularidad_estudiante(self):
         if self.legajo < self.LEGAJO_MINIMO or self.legajo > self.LEGAJO_MAXIMO:
@@ -90,6 +108,14 @@ class ResponsableArea:
         self.nombre_area = nombre_area
         self.responsable_cargo = responsable_cargo
         self.email_contacto = email_contacto
+    
+    def convertir_a_diccionario(self):
+        return {
+            "nombre_area": self.nombre_area,
+            "responsable_cargo": self.responsable_cargo,
+            "email_contacto": self.email_contacto,
+        }    
+        
 
 
 class Solicitud:
@@ -124,6 +150,19 @@ class Solicitud:
         fecha_vencimiento = fecha_creacion + timedelta(days=self.dias_vencimiento)
         return fecha_vencimiento.strftime(self.FORMATO_FECHA)   
 
+    def convertir_a_diccionario(self):
+        return {
+            "id_solicitud": self.id_solicitud,
+            "estudiante": self.estudiante.convertir_a_diccionario(),
+            "tipo": self.tipo,
+            "prioridad": self.prioridad,
+            "descripcion": self.descripcion,
+            "fecha_creacion": self.fecha_creacion,
+            "fecha_vencimiento": self.calcular_fecha_vencimiento(),
+            "dias_vencimiento": self.dias_vencimiento,
+            "estado": self.estado.convertir_a_diccionario(),
+            "area_responsable": self.area_responsable.convertir_a_diccionario(),
+        }
 class RepositorioSolicitudes:
     """Responsable de leer y guardar las solicitudes en el archivo JSON."""
 
@@ -247,34 +286,7 @@ class GestorSolicitudesAcademicas:
                 print(f"[ERROR] Ya existe una solicitud con el ID {id_solicitud}.")
                 return False
 
-        nuevo_registro = {
-            "id_solicitud": sol.id_solicitud,
-            "estudiante": {
-                "nombre": est.nombre,
-                "apellido": est.apellido,
-                "legajo": est.legajo,
-                "dni": est.dni,
-                "email": est.email,
-                "condicion": est.condicion,
-                "materias_aprobadas": est.materias_aprobadas,
-            },
-            "tipo": sol.tipo,
-            "prioridad": sol.prioridad,
-            "descripcion": sol.descripcion,
-            "fecha_creacion": sol.fecha_creacion,
-            "fecha_vencimiento": fecha_venc,
-            "dias_vencimiento": sol.dias_vencimiento,
-            "estado": {
-                "codigo": sol.estado.codigo,
-                "descripcion": sol.estado.descripcion,
-                "fecha_actualizacion": sol.estado.fecha_actualizacion,
-            },
-            "area_responsable": {
-                "nombre_area": sol.area_responsable.nombre_area,
-                "responsable_cargo": sol.area_responsable.responsable_cargo,
-                "email_contacto": sol.area_responsable.email_contacto,
-            },
-        }
+        nuevo_registro = sol.convertir_a_diccionario()
 
         datos.append(nuevo_registro)
         self.repositorio.guardar(datos)
