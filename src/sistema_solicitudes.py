@@ -269,7 +269,6 @@ class GestorSolicitudesAcademicas:
         self.mostrar = mostrar
 
     def _validar_datos_entrada(self, datos: DatosSolicitud):
-
         if (
             not datos.nombre
             or not datos.apellido
@@ -311,7 +310,6 @@ class GestorSolicitudesAcademicas:
         return True
 
     def procesar_solicitud(self, datos: DatosSolicitud):
-
         self.mostrar(
             f"\n[PROCESANDO] Iniciando registro de solicitud #{datos.id_solicitud}..."
         )
