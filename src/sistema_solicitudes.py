@@ -220,8 +220,8 @@ class DatosSolicitud:
 class GestorSolicitudesAcademicas:
     """Clase encargada de gestionar las operaciones sobre las solicitudes."""
 
-    def __init__(self, archivo_db="solicitudes_db.json"):
-        self.repositorio = RepositorioSolicitudes(archivo_db)
+    def __init__(self, archivo_db="solicitudes_db.json", repositorio=None):
+        self.repositorio = repositorio or RepositorioSolicitudes(archivo_db)
 
 # ----------    
     def _validar_datos_entrada(self, datos:DatosSolicitud):
