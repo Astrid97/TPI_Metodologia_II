@@ -94,6 +94,8 @@ class ResponsableArea:
 
 class Solicitud:
     """Representa una solicitud académica realizada por un estudiante."""
+    
+    FORMATO_FECHA = "%Y-%m-%d"
 
     def __init__(
         self,
@@ -116,6 +118,11 @@ class Solicitud:
         self.estado = estado
         self.area_responsable = area_responsable
         self.dias_vencimiento = dias_vencimiento
+        
+    def calcular_fecha_vencimiento(self):
+        fecha_creacion = datetime.strptime(self.fecha_creacion, self.FORMATO_FECHA)
+        fecha_vencimiento = fecha_creacion + timedelta(days=self.dias_vencimiento)
+        return fecha_vencimiento.strftime(self.FORMATO_FECHA)   
 
 class RepositorioSolicitudes:
     """Responsable de leer y guardar las solicitudes en el archivo JSON."""
@@ -225,9 +232,7 @@ class GestorSolicitudesAcademicas:
         sol.area_responsable = area
         sol.dias_vencimiento = dias
 
-        # Cálculo de fecha de vencimiento
-        fecha_obj = datetime.strptime(fecha_str, "%Y-%m-%d")
-        fecha_venc = (fecha_obj + timedelta(days=dias)).strftime("%Y-%m-%d")
+        fecha_venc = sol.calcular_fecha_vencimiento()
 
         # Lectura y guardado en archivo JSON
         datos = []
