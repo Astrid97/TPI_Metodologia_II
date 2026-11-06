@@ -219,8 +219,25 @@ class GestorSolicitudesAcademicas:
         if prioridad not in list(Prioridad):
             print(f"[ERROR] Prioridad '{prioridad}' inválida.")
             return False
-
         return True    
+    
+    def _verificar_condiciones_academicas(self, est, tipo_solicitud):
+        es_valido, mensaje_val = est.validar_legajo_y_regularidad_estudiante()
+        if not es_valido:
+            print(f"[RECHAZADA EN VALIDACIÓN] {mensaje_val}")
+            return False
+        
+        # Regla especial que no está en las tablas porque depende del estudiante
+        # y del tipo de trámite: las equivalencias solo pueden pedirlas alumnos regulares
+        if (
+            tipo_solicitud == TipoSolicitud.EQUIVALENCIA
+            and est.condicion != CondicionEstudiante.REGULAR
+        ):
+            print(
+                "[ERROR] Las equivalencias solo pueden ser solicitadas por alumnos REGULARES."
+            )
+            return False
+        return True
         
     def procesar_solicitud(
         self,
@@ -238,11 +255,12 @@ class GestorSolicitudesAcademicas:
         fecha_str,
     ):
         print(f"\n[PROCESANDO] Iniciando registro de solicitud #{id_solicitud}...")
-
+        
         if not self._validar_datos_entrada(
             nombre_est, apellido_est, dni_est, descripcion, tipo_solicitud, prioridad
         ):
             return False
+        
         
         # Parsear los valores recibidos (str) a enum para poder buscarlos 
         # en los diccionario PLAZOS_DIAS y AREAS_POR_TIPO
@@ -273,21 +291,7 @@ class GestorSolicitudesAcademicas:
             0,
         )
 
-        # Verificación de condiciones académicas del estudiante
-        es_valido, mensaje_val = est.validar_legajo_y_regularidad_estudiante()
-        if not es_valido:
-            print(f"[RECHAZADA EN VALIDACIÓN] {mensaje_val}")
-            return False
-
-        # Regla especial que no está en las tablas porque depende del estudiante:
-        # las equivalencias solo pueden pedirlas alumnos regulares
-        if (
-            tipo_solicitud == TipoSolicitud.EQUIVALENCIA 
-            and est.condicion != CondicionEstudiante.REGULAR
-        ):
-            print(
-                "[ERROR] Las equivalencias solo pueden ser solicitadas por alumnos REGULARES."
-            )
+        if not self._verificar_condiciones_academicas(est, tipo_solicitud):
             return False
         
         # Asignación de área responsable y plazo según tipo y prioridad
