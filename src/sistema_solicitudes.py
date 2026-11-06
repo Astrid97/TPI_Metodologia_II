@@ -406,20 +406,20 @@ class GestorSolicitudesAcademicas:
         datos = self.repositorio.leer()
 
         resultado = []
-        for s in datos:
-            cumple_legajo = (legajo is None) or (s["estudiante"]["legajo"] == legajo)
+        for solicitud in datos:
+            cumple_legajo = (legajo is None) or (solicitud["estudiante"]["legajo"] == legajo)
             cumple_estado = (codigo_estado is None) or (
-                s["estado"]["codigo"] == codigo_estado
+                solicitud["estado"]["codigo"] == codigo_estado
             )
             if cumple_legajo and cumple_estado:
-                resultado.append(s)
+                resultado.append(solicitud)
 
         self.mostrar(f"\n--- RESULTADOS DE BÚSQUEDA (Encontradas: {len(resultado)}) ---")
-        for r in resultado:
+        for encontrada in resultado:
             self.mostrar(
-                f"ID #{r['id_solicitud']} | Legajo: {r['estudiante']['legajo']} ({r['estudiante']['apellido']}, {r['estudiante']['nombre']}) "
-                f"| Tipo: {r['tipo']} | Prioridad: {r['prioridad']} | Estado: {r['estado']['codigo']} "
-                f"| Área: {r['area_responsable']['nombre_area']}"
+                f"ID #{encontrada['id_solicitud']} | Legajo: {encontrada['estudiante']['legajo']} ({encontrada['estudiante']['apellido']}, {encontrada['estudiante']['nombre']}) "
+                f"| Tipo: {encontrada['tipo']} | Prioridad: {encontrada['prioridad']} | Estado: {encontrada['estado']['codigo']} "
+                f"| Área: {encontrada['area_responsable']['nombre_area']}"
             )
         return resultado
     
