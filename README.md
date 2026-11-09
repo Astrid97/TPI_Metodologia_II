@@ -71,3 +71,7 @@ El sistema cuenta con **5 operaciones funcionales verificables**:
 ---
 
 ## 👥 Integrantes del Equipo
+- Alterio Micaela,
+- Ambrosio Maria Laura,
+- Añazco Astrid Ayelen,
+- Aranchet Carina. 
